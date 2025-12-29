@@ -1,6 +1,7 @@
 // app/authors/[id]/page.tsx
 import { fetchAuthorById, fetchPostsByAuthor } from "@/lib/api";
 import Link from "next/link";
+import Breadcrumbs from "@/components/Breadcrumbs";
 
 type Post = {
   slug: string;
@@ -30,6 +31,7 @@ export default async function AuthorPage({
 
   return (
     <div className="container mx-auto py-10 px-4">
+      <Breadcrumbs authorName={author.displayName} />
       {/* Author Profile */}
       <div className="flex flex-col md:flex-row gap-6 mb-10">
         {author.image && (

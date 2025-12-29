@@ -10,36 +10,29 @@ function slugToTitle(slug: string) {
     .replace(/\b\w/g, (l) => l.toUpperCase());
 }
 
-export default function Breadcrumbs({ postTitle }: { postTitle?: string }) {
-  const pathname = usePathname(); // e.g. "/blog/react", "/tags/App%20Router"
-  const segments = pathname.split("/").filter(Boolean);
+type BreadcrumbsProps = {
+  postTitle?: string;   // For blog posts
+  tagName?: string;     // For tag pages
+  authorName?: string;  // For author pages
+};
 
+export default function Breadcrumbs({ postTitle, tagName, authorName }: BreadcrumbsProps) {
+  const pathname = usePathname(); // e.g. "/blog/react", "/tags/App%20Router"
   const crumbs = [{ name: "Home", href: "/" }];
 
-  // /blog page
-  if (segments.length === 1 && segments[0] === "blog") {
-    crumbs.push({ name: "Blog", href: "/blog" });
-  }
-
-  // /blog/[slug] page
-  else if (segments.length === 2 && segments[0] === "blog" && postTitle) {
-    crumbs.push({ name: "Blog", href: "/blog" });
+  // Blog post page
+  if (postTitle) {
     crumbs.push({ name: postTitle, href: pathname });
   }
 
-  // /tags/[tag] page
-  else if (segments.length === 2 && segments[0] === "tags") {
-    // ✅ Decode the tag from URL
-    const tagName = decodeURIComponent(segments[1]);
-    crumbs.push({ name: `${tagName}`, href: pathname });
+  // Tag page
+  else if (tagName) {
+    crumbs.push({ name: tagName, href: pathname });
   }
 
-  // Static pages like /about, /contact
-  else if (segments.length === 1) {
-    crumbs.push({
-      name: slugToTitle(segments[0]),
-      href: pathname,
-    });
+  // Author page
+  else if (authorName) {
+    crumbs.push({ name: authorName, href: pathname });
   }
 
   return (
