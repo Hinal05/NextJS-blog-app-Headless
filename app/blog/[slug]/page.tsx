@@ -3,6 +3,17 @@ import { notFound } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { fetchPosts } from "@/lib/api";
 
+function fixDrupalBodyImages(html: string) {
+  const baseUrl = process.env.NEXT_PUBLIC_DRUPAL_API_URL;
+
+  if (!baseUrl) return html;
+
+  return html.replace(
+    /<img([^>]+)src="\/([^"]+)"/g,
+    `<img$1src="${baseUrl}/$2"`
+  );
+}
+
 function stripInlineStyles(html: string) {
   return html.replace(/style="[^"]*"/g, "");
 }
@@ -27,7 +38,10 @@ export default async function BlogPostPage({ params }: any) {
       <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
 
       <div className="text-sm text-gray-600 mb-2">
-        | <span>{post.createdDateFormatted}</span> | by <span>{post.author}</span>
+        | <span>
+          {/* {post.createdDateFormatted} */}
+            {new Date(post.createdDate).toLocaleDateString("en-GB")}
+          </span> | by <span>{post.author}</span>
       </div>
 
       {post.image && (
@@ -42,7 +56,9 @@ export default async function BlogPostPage({ params }: any) {
 
       <div
         className="prose max-w-none"
-        dangerouslySetInnerHTML={{ __html: stripInlineStyles(post.content) }}
+        dangerouslySetInnerHTML={{
+          __html: fixDrupalBodyImages(stripInlineStyles(post.content)),
+        }}
       />
 
       {post.tags?.length > 0 && (

@@ -8,19 +8,30 @@ export default function BlogList({ posts: initialPosts }: { posts: any[] }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [filteredPosts, setFilteredPosts] = useState(initialPosts);
   const [posts, setPosts] = useState(initialPosts);
+  const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
 
   useEffect(() => {
     const q = searchQuery.toLowerCase();
 
     const filtered = (posts ?? []).filter((post) => {
       const title = typeof post.title === "string" ? post.title.toLowerCase() : "";
-      const content = typeof post.field_body?.value === "string" ? post.field_body.value.toLowerCase() : "";
+      const content =
+        typeof post.content === "string" ? post.content.toLowerCase() : "";
 
       return title.includes(q) || content.includes(q);
     });
 
-    setFilteredPosts(filtered);
-  }, [searchQuery, posts]);
+    const sorted = [...filtered].sort((a, b) => {
+      const dateA = new Date(a.createdDate).getTime();
+      const dateB = new Date(b.createdDate).getTime();
+
+      return sortOrder === "newest"
+        ? dateB - dateA // newest first
+        : dateA - dateB; // oldest first
+    });
+
+    setFilteredPosts(sorted);
+  }, [searchQuery, posts, sortOrder]);
 
   return (
     <div className="p-8">
@@ -30,13 +41,24 @@ export default function BlogList({ posts: initialPosts }: { posts: any[] }) {
 
       <a href="/blog/add" className="inline-block bg-green-600 text-white px-4 py-2 rounded mb-6 hover:bg-green-700">+ Add New Blog</a>
 
-      <input
-        type="text"
-        placeholder="Search posts..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        className="w-full p-2 mb-6 border border-gray-300 rounded"
-      />
+      <div className="flex flex-col md:flex-row gap-4 mb-6">
+        <input
+          type="text"
+          placeholder="Search posts..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="flex-1 p-2 border border-gray-300 rounded"
+        />
+
+        <select
+          value={sortOrder}
+          onChange={(e) => setSortOrder(e.target.value as "newest" | "oldest")}
+          className="p-2 border border-gray-300 rounded"
+        >
+          <option value="newest">Newest first</option>
+          <option value="oldest">Oldest first</option>
+        </select>
+      </div>
 
       {filteredPosts.length === 0 ? (
         <p>No posts found.</p>
