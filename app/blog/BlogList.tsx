@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import Breadcrumbs from "@/components/Breadcrumbs";
+import Link from "next/link";
 
 const ITEMS_PER_PAGE = 4;
 
@@ -170,12 +171,13 @@ export default function BlogList({ posts: initialPosts }: { posts: Post[] }) {
                     {post.tags?.length > 0 && (
                       <div className="flex flex-wrap gap-1 mt-3">
                         {post.tags.map((tag) => (
-                          <span
+                          <Link
                             key={tag}
-                            className="text-xs bg-gray-200 px-2 py-0.5 rounded"
+                            href={`/tags/${encodeURIComponent(tag)}`}
+                            className="text-xs bg-gray-200 px-2 py-0.5 rounded hover:bg-gray-300"
                           >
                             {tag}
-                          </span>
+                          </Link>
                         ))}
                       </div>
                     )}

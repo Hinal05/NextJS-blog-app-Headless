@@ -2,6 +2,7 @@
 import { notFound } from "next/navigation";
 import Breadcrumbs from "@/components/Breadcrumbs";
 import { fetchPosts } from "@/lib/api";
+import Link from "next/link";
 
 function fixDrupalBodyImages(html: string) {
   const baseUrl = process.env.NEXT_PUBLIC_DRUPAL_API_URL;
@@ -65,9 +66,13 @@ export default async function BlogPostPage({ params }: any) {
           <h4 className="font-semibold mb-2">Tags:</h4>
           <div className="flex flex-wrap gap-2">
             {post.tags.map((tag) => (
-              <span key={tag} className="bg-gray-200 text-black px-2 py-1 rounded text-sm">
-                #{tag}
-              </span>
+              <Link
+                key={tag}
+                href={`/tags/${encodeURIComponent(tag)}`}
+                className="text-xs bg-gray-200 px-2 py-0.5 rounded hover:bg-gray-300"
+              >
+                {tag}
+              </Link>
             ))}
           </div>
         </div>
