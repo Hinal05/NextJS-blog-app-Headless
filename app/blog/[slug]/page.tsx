@@ -38,12 +38,8 @@ export default async function BlogPostPage({ params }: any) {
       <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
 
       <div className="text-sm text-gray-600 mb-2">
-        | <span>
-          {/* {post.createdDateFormatted} */}
-            {new Date(post.createdDate).toLocaleDateString("en-GB")}
-          </span> | by <span>{post.author}</span>
         <p className="text-xs text-gray-500 mb-2">
-          {new Date(post.createdDate).toLocaleDateString("en-GB")} | by {post.author}
+          {new Date(post.createdDate).toLocaleDateString("en-GB")} | by  <a href={`/authors/${post.authorId}`} className="text-blue-600 hover:underline" > {post.author} </a>
         </p>
       </div>
 
