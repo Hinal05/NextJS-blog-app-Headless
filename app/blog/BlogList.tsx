@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import Breadcrumbs from "@/components/Breadcrumbs";
 
 const ITEMS_PER_PAGE = 4;
@@ -11,12 +11,33 @@ function stripHtml(html: string) {
   return html.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
 }
 
-export default function BlogList({ posts: initialPosts }: { posts: any[] }) {
+type Post = {
+  slug: string;
+  title: string;
+  content: string;
+  image?: string;
+  author: string;
+  authorId: string;
+  createdDate: string;
+  tags: string[];
+};
+
+export default function BlogList({ posts: initialPosts }: { posts: Post[] }) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTag, setSelectedTag] = useState<string>("all");
   const [posts] = useState(initialPosts);
-  const [filteredPosts, setFilteredPosts] = useState<any[]>([]);
+  const [filteredPosts, setFilteredPosts] = useState<Post[]>([]);
   const [sortOrder, setSortOrder] = useState<"newest" | "oldest">("newest");
   const [currentPage, setCurrentPage] = useState(1);
+
+  /* ✅ Collect unique tags for dropdown */
+  const allTags = useMemo(() => {
+    const tagSet = new Set<string>();
+    posts.forEach((post) => {
+      post.tags?.forEach((tag) => tagSet.add(tag));
+    });
+    return Array.from(tagSet).sort();
+  }, [posts]);
 
   useEffect(() => {
     const q = searchQuery.toLowerCase();
@@ -24,7 +45,15 @@ export default function BlogList({ posts: initialPosts }: { posts: any[] }) {
     const filtered = posts.filter((post) => {
       const title = post.title?.toLowerCase() ?? "";
       const content = stripHtml(post.content ?? "").toLowerCase();
-      return title.includes(q) || content.includes(q);
+
+      const matchesSearch =
+        title.includes(q) || content.includes(q);
+
+      const matchesTag =
+        selectedTag === "all" ||
+        post.tags?.includes(selectedTag);
+
+      return matchesSearch && matchesTag;
     });
 
     const sorted = [...filtered].sort((a, b) => {
@@ -35,9 +64,9 @@ export default function BlogList({ posts: initialPosts }: { posts: any[] }) {
 
     setFilteredPosts(sorted);
     setCurrentPage(1);
-  }, [searchQuery, sortOrder, posts]);
+  }, [searchQuery, sortOrder, selectedTag, posts]);
 
-  // Pagination
+  /* Pagination */
   const totalPages = Math.ceil(filteredPosts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedPosts = filteredPosts.slice(
@@ -58,7 +87,7 @@ export default function BlogList({ posts: initialPosts }: { posts: any[] }) {
         + Add New Blog
       </a>
 
-      {/* Search + Sort */}
+      {/* Search + Sort + Tag Filter */}
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         <input
           type="text"
@@ -67,6 +96,19 @@ export default function BlogList({ posts: initialPosts }: { posts: any[] }) {
           onChange={(e) => setSearchQuery(e.target.value)}
           className="flex-1 p-2 border border-gray-300 rounded"
         />
+
+        <select
+          value={selectedTag}
+          onChange={(e) => setSelectedTag(e.target.value)}
+          className="p-2 border border-gray-300 rounded"
+        >
+          <option value="all">All tags</option>
+          {allTags.map((tag) => (
+            <option key={tag} value={tag}>
+              {tag}
+            </option>
+          ))}
+        </select>
 
         <select
           value={sortOrder}
@@ -93,12 +135,14 @@ export default function BlogList({ posts: initialPosts }: { posts: any[] }) {
                   className="bg-white p-4 rounded shadow hover:scale-105 transition"
                 >
                   <a href={`/blog/${post.slug}`}>
-                    <img
-                      src={post.image}
-                      alt={post.title}
-                      loading="lazy"
-                      className="w-full h-40 object-contain mb-4"
-                    />
+                    {post.image && (
+                      <img
+                        src={post.image}
+                        alt={post.title}
+                        loading="lazy"
+                        className="w-full h-40 object-contain mb-4"
+                      />
+                    )}
 
                     <h3 className="text-lg font-semibold">{post.title}</h3>
 
@@ -116,11 +160,25 @@ export default function BlogList({ posts: initialPosts }: { posts: any[] }) {
                       </a>
                     </p>
 
-                    {/* ✅ Clean excerpt (NO HTML) */}
+                    {/* Excerpt */}
                     <p className="text-sm text-gray-600">
                       {plainText.slice(0, 80)}
                       {plainText.length > 80 && "..."}
                     </p>
+
+                    {/* Tags */}
+                    {post.tags?.length > 0 && (
+                      <div className="flex flex-wrap gap-1 mt-3">
+                        {post.tags.map((tag) => (
+                          <span
+                            key={tag}
+                            className="text-xs bg-gray-200 px-2 py-0.5 rounded"
+                          >
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </a>
                 </div>
               );
