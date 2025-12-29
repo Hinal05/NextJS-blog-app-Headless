@@ -1,6 +1,17 @@
 // lib/api.ts
-// lib/api.ts
 type NormalizedPost = {
+  slug: string;
+  title: string;
+  content: string;
+  image: string;
+  author: string;
+  authorId: string;
+  createdDate: string;
+  createdDateFormatted: string;
+  tags: string[];
+};
+
+export type AuthorPost = {
   slug: string;
   title: string;
   content: string;
@@ -136,7 +147,9 @@ export async function fetchAuthorById(id: string) {
 
 
 
-export async function fetchPostsByAuthor(authorId: string) {
+export async function fetchPostsByAuthor(
+  authorId: string
+): Promise<AuthorPost[]> {
   try {
     const res = await fetch(
       `${process.env.DRUPAL_API_URL}/jsonapi/node/blog?filter[uid.id]=${authorId}&include=uid,field_image,field_tags`,
