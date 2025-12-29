@@ -42,6 +42,9 @@ export default async function BlogPostPage({ params }: any) {
           {/* {post.createdDateFormatted} */}
             {new Date(post.createdDate).toLocaleDateString("en-GB")}
           </span> | by <span>{post.author}</span>
+        <p className="text-xs text-gray-500 mb-2">
+          {new Date(post.createdDate).toLocaleDateString("en-GB")} | by {post.author}
+        </p>
       </div>
 
       {post.image && (

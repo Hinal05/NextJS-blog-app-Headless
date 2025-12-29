@@ -5,6 +5,12 @@ import Breadcrumbs from "@/components/Breadcrumbs";
 
 const ITEMS_PER_PAGE = 4;
 
+/* ✅ Helper: remove HTML tags safely */
+function stripHtml(html: string) {
+  if (!html) return "";
+  return html.replace(/<[^>]*>/g, "").replace(/\s+/g, " ").trim();
+}
+
 export default function BlogList({ posts: initialPosts }: { posts: any[] }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [posts] = useState(initialPosts);
@@ -17,7 +23,7 @@ export default function BlogList({ posts: initialPosts }: { posts: any[] }) {
 
     const filtered = posts.filter((post) => {
       const title = post.title?.toLowerCase() ?? "";
-      const content = post.content?.toLowerCase() ?? "";
+      const content = stripHtml(post.content ?? "").toLowerCase();
       return title.includes(q) || content.includes(q);
     });
 
@@ -28,10 +34,10 @@ export default function BlogList({ posts: initialPosts }: { posts: any[] }) {
     });
 
     setFilteredPosts(sorted);
-    setCurrentPage(1); // reset page on search/sort
+    setCurrentPage(1);
   }, [searchQuery, sortOrder, posts]);
 
-  // Pagination logic
+  // Pagination
   const totalPages = Math.ceil(filteredPosts.length / ITEMS_PER_PAGE);
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const paginatedPosts = filteredPosts.slice(
@@ -78,29 +84,47 @@ export default function BlogList({ posts: initialPosts }: { posts: any[] }) {
       ) : (
         <>
           <div className="grid gap-6 grid-cols-1 md:grid-cols-4">
-            {paginatedPosts.map((post) => (
-              <div
-                key={post.slug}
-                className="bg-white p-4 rounded shadow hover:scale-105 transition"
-              >
-                <a href={`/blog/${post.slug}`}>
-                  <img
-                    src={post.image}
-                    alt={post.title}
-                    loading="lazy"
-                    className="w-full h-40 object-contain mb-4"
-                  />
-                  <h3 className="text-lg font-semibold">{post.title}</h3>
-                  <p className="text-xs text-gray-500 mb-2">
-                    {new Date(post.createdDate).toLocaleDateString("en-GB")}
-                  </p>
-                  <p className="text-sm text-gray-600">
-                    {(post.content ?? "").slice(0, 60)}
-                    {(post.content ?? "").length > 60 && "..."}
-                  </p>
-                </a>
-              </div>
-            ))}
+            {paginatedPosts.map((post) => {
+              const plainText = stripHtml(post.content ?? "");
+
+              return (
+                <div
+                  key={post.slug}
+                  className="bg-white p-4 rounded shadow hover:scale-105 transition"
+                >
+                  <a href={`/blog/${post.slug}`}>
+                    <img
+                      src={post.image}
+                      alt={post.title}
+                      loading="lazy"
+                      className="w-full h-40 object-contain mb-4"
+                    />
+
+                    <h3 className="text-lg font-semibold">{post.title}</h3>
+
+                    <p className="text-xs text-gray-500">
+                      {new Date(post.createdDate).toLocaleDateString("en-GB")}
+                    </p>
+
+                    <p className="text-xs text-gray-600 mb-2">
+                      by{" "}
+                      <a
+                        href={`/authors/${post.authorId}`}
+                        className="text-blue-600 hover:underline"
+                      >
+                        {post.author}
+                      </a>
+                    </p>
+
+                    {/* ✅ Clean excerpt (NO HTML) */}
+                    <p className="text-sm text-gray-600">
+                      {plainText.slice(0, 80)}
+                      {plainText.length > 80 && "..."}
+                    </p>
+                  </a>
+                </div>
+              );
+            })}
           </div>
 
           {/* Pagination */}
@@ -119,9 +143,7 @@ export default function BlogList({ posts: initialPosts }: { posts: any[] }) {
                   key={i}
                   onClick={() => setCurrentPage(i + 1)}
                   className={`px-3 py-1 border rounded ${
-                    currentPage === i + 1
-                      ? "bg-black text-white"
-                      : ""
+                    currentPage === i + 1 ? "bg-black text-white" : ""
                   }`}
                 >
                   {i + 1}
