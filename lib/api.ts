@@ -1,4 +1,5 @@
 // lib/api.ts
+// lib/api.ts
 type NormalizedPost = {
   slug: string;
   title: string;
@@ -14,6 +15,8 @@ type NormalizedPost = {
 export async function fetchPosts(): Promise<NormalizedPost[]> {
   try {
     const apiBase = process.env.DRUPAL_API_URL;
+    if (!apiBase) throw new Error("DRUPAL_API_URL is not defined");
+
     const res = await fetch(`${apiBase}/jsonapi/node/blog?include=uid,field_image,field_tags`, {
       cache: 'no-store',
     });
@@ -28,17 +31,17 @@ export async function fetchPosts(): Promise<NormalizedPost[]> {
 
     return json.data.map((node: any) => {
       const { attributes, relationships } = node;
-      const slug = attributes.path.alias.split('/').pop();
+      const slug = attributes.path?.alias?.split('/').pop() || '';
       const createdDate = attributes.created;
       const createdDateFormatted = new Date(createdDate).toLocaleDateString('en-GB');
-      const content = attributes.field_body;
+      const content = attributes.field_body?.processed || attributes.field_body?.value || "";
 
       // Author
       const uidRel = relationships.uid?.data;
       const authorObj = included.find(
         (inc: any) => inc.type === 'user--user' && inc.id === uidRel?.id
       );
-      const author = authorObj?.attributes.display_name || 'Unknown';
+      const author = authorObj?.attributes.display_name || authorObj?.attributes.name || 'Unknown';
       const authorId = authorObj?.id || 'unknown';
 
       // Image
@@ -47,14 +50,14 @@ export async function fetchPosts(): Promise<NormalizedPost[]> {
         (inc: any) => inc.type === 'file--file' && inc.id === imgRel?.id
       );
       const image = imgObj
-        ? `${apiBase}/${imgObj.attributes.uri.url}`
+        ? `${apiBase.replace(/\/$/, '')}/${imgObj.attributes.uri.url.replace(/^\//, '')}`
         : '';
 
       // Tags
       const tags: string[] = (relationships.field_tags?.data || [])
         .map((tagRef: any) => {
           const tagTerm = included.find(
-            (inc: any) => inc.type === 'taxonomy_term--tags' && inc.id === tagRef.id
+            (inc: any) => inc.type === 'taxonomy_term--tags' && inc.id === tagRef?.id
           );
           return tagTerm?.attributes.name;
         })

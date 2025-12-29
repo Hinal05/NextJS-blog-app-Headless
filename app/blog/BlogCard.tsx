@@ -17,11 +17,11 @@ export default function BlogCard({ post }: { post: any }) {
         <h3 className="text-lg font-semibold">{post.title}</h3>
         <p className="text-sm text-gray-600">{post.content.slice(0, 60)}...</p>
       </a>
-      <p className="text-sm text-gray-600">
+      {/* <p className="text-sm text-gray-600">
         <Link href={`/authors/${post.authorId}`} className="text-blue-600 hover:underline">
           {post.author}
         </Link>
-      </p>
+      </p> */}
     </div>
   );
 }

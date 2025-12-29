@@ -59,11 +59,11 @@ export default function BlogList({ posts: initialPosts }: { posts: any[] }) {
                   {post.field_body?.value && post.field_body.value.length > 60 ? "..." : ""}
                 </p>
               </a>
-              <p className="text-sm text-gray-600">
+              {/* <p className="text-sm text-gray-600">
                 <Link href={`/authors/${post.authorId}`} className="text-blue-600 hover:underline">
                   {post.author}
                 </Link>
-              </p>
+              </p> */}
             </div>
           ))}
         </div>
