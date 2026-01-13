@@ -1,5 +1,6 @@
 // lib/api.ts
 type NormalizedPost = {
+  id: string;
   slug: string;
   title: string;
   content: string;
@@ -41,7 +42,7 @@ export async function fetchPosts(): Promise<NormalizedPost[]> {
     const included = json.included || [];
 
     return json.data.map((node: any) => {
-      const { attributes, relationships } = node;
+      const { attributes, relationships, id } = node;
       const slug = attributes.path?.alias?.split('/').pop() || '';
       const createdDate = attributes.created;
       const createdDateFormatted = new Date(createdDate).toLocaleDateString('en-GB');
@@ -75,9 +76,10 @@ export async function fetchPosts(): Promise<NormalizedPost[]> {
         .filter(Boolean);
 
       return {
-        slug,
+        id: id, // Ensure this is passed!
+        slug: attributes.path?.alias?.split('/').pop() || '',
         title: attributes.title,
-        content,
+        content: attributes.field_body?.processed || attributes.field_body?.value || "",
         image,
         author,
         authorId,

@@ -13,6 +13,7 @@ function stripHtml(html: string) {
 }
 
 type Post = {
+  id: string;
   slug: string;
   title: string;
   content: string;
@@ -132,8 +133,8 @@ export default function BlogList({ posts: initialPosts }: { posts: Post[] }) {
 
               return (
                 <div
-                  key={post.slug}
-                  className="bg-white p-4 rounded shadow hover:scale-105 transition"
+                  key={post.id}
+                  className="bg-white p-4 rounded shadow hover:scale-105 transition overflow-hidden"
                 >
                   <a href={`/blog/${post.slug}`}>
                     {post.image && (
@@ -182,6 +183,10 @@ export default function BlogList({ posts: initialPosts }: { posts: Post[] }) {
                       </div>
                     )}
                   </a>
+                  <AuthEditWrapper id={post.id} />
+                  <p className="text-sm text-gray-600 mt-2">
+                    {plainText.slice(0, 80)}...
+                  </p>
                 </div>
               );
             })}
@@ -222,5 +227,24 @@ export default function BlogList({ posts: initialPosts }: { posts: Post[] }) {
         </>
       )}
     </div>
+  );
+}
+
+function AuthEditWrapper({ id }: { id: string }) { // Ensure this is the UUID
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    setIsLoggedIn(!!localStorage.getItem('csrf_token'));
+  }, []);
+
+  if (!isLoggedIn) return null;
+
+  return (
+    <Link 
+      href={`/blog/edit/${id}`} // This MUST be the UUID from node.id
+      className="absolute top-2 right-2 bg-yellow-400 text-xs font-bold px-2 py-1 rounded hover:bg-yellow-500"
+    >
+      EDIT
+    </Link>
   );
 }

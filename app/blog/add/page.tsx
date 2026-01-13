@@ -59,14 +59,14 @@ export default function AddBlogPage() {
           onChange={handleChange}
           className="border p-2 rounded"
         />
-        <input
+        {/* <input
           type="text"
           name="image"
           placeholder="Image URL"
           value={formData.image}
           onChange={handleChange}
           className="border p-2 rounded"
-        />
+        /> */}
         <textarea
           name="content"
           placeholder="Content"
